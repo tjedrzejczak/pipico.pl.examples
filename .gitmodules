@@ -1,0 +1,3 @@
+[submodule "picolib"]
+	path = picolib
+	url = https://github.com/tjedrzejczak/PicoLib.git
