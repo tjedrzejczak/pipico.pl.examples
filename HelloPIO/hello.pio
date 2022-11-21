@@ -1,0 +1,39 @@
+.program hello
+
+.wrap_target
+    out pins, 1 [19]    ; 20 cycles
+    nop         [19]    ; 20 cycles
+    nop         [19]    ; 20 cycles
+    nop         [19]    ; 20 cycles
+    nop         [19]    ; 20 cycles
+
+.wrap
+
+% c-sdk {
+#include "hardware/clocks.h"
+
+void hello_program_init(PIO pio, uint sm, uint offset, uint pin, float freq)
+{
+    pio_sm_config conf = hello_program_get_default_config(offset);
+
+    // set pin
+    pio_gpio_init(pio, pin);
+    sm_config_set_out_pins(&conf, pin, 1);
+
+    // pin direction is output
+    pio_sm_set_consecutive_pindirs(pio, sm, pin, 1, true);
+
+    // set fifo
+    sm_config_set_out_shift(&conf, true, true, 32);
+    sm_config_set_fifo_join(&conf, PIO_FIFO_JOIN_TX);
+
+    // set frequency
+    float div = (float)clock_get_hz(clk_sys) / freq;
+    sm_config_set_clkdiv(&conf, div);
+
+    // load & start
+    pio_sm_init(pio, sm, offset, &conf);
+    pio_sm_set_enabled(pio, sm, true);
+}
+
+%}
